@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
+setup_requires=['setuptools_scm'],
 
 setup(
     name='jeltz',
-    version='{{VERSION_PLACEHOLDER}}',
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     packages=find_packages(),
     install_requires=[
         'pandas',
