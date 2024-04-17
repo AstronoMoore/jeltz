@@ -12,17 +12,22 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 from astropy.table import Table
 
-
-
 TNS_API_URL = 'https://www.wis-tns.org/api/get/object'
 
 def get_TNS_api_key():
-    """
-    # fetching the MARVIN TNS api key from the settings.ini file
-    """
-    config = configparser.ConfigParser()
-    config.read('settings.ini')
-    return config['API']['TNS_API_KEY']
+    try:
+        config = configparser.ConfigParser()
+        config.read('settings.ini')
+        if 'API' in config and 'TNS_API_KEY' in config['API']:
+            key = config['API']['TNS_API_KEY']
+            return key
+        else:
+            print("Error: TNS API key not found in settings.ini")
+            return None
+    except FileNotFoundError:
+        print("Error: settings.ini file not found")
+        return None
+
 
 def get_LASAIR_TOKEN():
     """
@@ -32,15 +37,18 @@ def get_LASAIR_TOKEN():
     config.read('settings.ini')
     return config['API']['LASAIR_TOKEN']
 
-
 def tns_lookup(tnsname):
     """
     Lookup TNS information for the given object name.
     """
     try:
         print(f'Looking up TNS info for {tnsname}')
+        try:
+            api_key = get_TNS_api_key()
+        except Exception as e:
+            print(f"Error reading TNS API key: {e}")
         data = {
-            'api_key': get_TNS_api_key(),
+            'api_key': api_key,
             'data': json.dumps({
                 "objname": tnsname,
                 "objid": "",
@@ -48,6 +56,7 @@ def tns_lookup(tnsname):
                 "spectra": "1"
             })
         }
+        print(tnsname)
         response = requests.post(TNS_API_URL, data=data, headers={'User-Agent': 'tns_marker{"tns_id":104739,"type": "bot", "name":"Name and Redshift Retriever"}'})
         response.raise_for_status()  # Raise an exception
         json_data = response.json()
@@ -169,7 +178,6 @@ def fetch_neowise(ra, dec):
     skycoord = SkyCoord(ra,dec,unit="deg")
     print('Fetching NEOWISE')
     url =  "https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query?catalog=neowiser_p1bs_psd&spatial=cone&radius=5&radunits=arcsec&objstr=" + skycoord.ra.to_string(u.hour, alwayssign=True) + '+' + skycoord.dec.to_string(u.degree, alwayssign=True) + "&outfmt=1&selcols=ra,dec,mjd,w1mpro,w1sigmpro,w2mpro,w2sigmpro"
-    print(url)
     r = requests.get(url)
     table = Table.read(url, format='ascii')
     neowise_master = table.to_pandas()
@@ -189,6 +197,7 @@ def fetch_neowise(ra, dec):
     return neowise
 
 def identify_surveys(TNS_information):
+    print('identifying surveys')
     reporting_list = TNS_information['internal_names']
     reporting_list= reporting_list[0].split(',')
     survey_dict = {}
@@ -211,6 +220,7 @@ def identify_surveys(TNS_information):
 
 def marvin(tnsname):
     TNS_info = tns_lookup(tnsname)
+    print(TNS_info)
     surveys = identify_surveys(TNS_info)
 
     The_Book = []
@@ -230,8 +240,5 @@ def marvin(tnsname):
 
     return combined_data
 
-
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit(1)
-    tnsname = sys.argv[1]
+    print('JELTZ!')
