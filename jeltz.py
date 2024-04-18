@@ -18,7 +18,7 @@ def get_TNS_api_key():
     try:
         config = configparser.ConfigParser()
         config.read('settings.ini')
-        if 'API' in config and 'TNS_API_KEY' in config['API']:
+        if 'TNS_API_KEY' in config['API']:
             key = config['API']['TNS_API_KEY']
             return key
         else:
@@ -42,7 +42,6 @@ def tns_lookup(tnsname):
     Lookup TNS information for the given object name.
     """
     try:
-        print(f'Looking up TNS info for {tnsname}')
         try:
             api_key = get_TNS_api_key()
         except Exception as e:
@@ -56,7 +55,6 @@ def tns_lookup(tnsname):
                 "spectra": "1"
             })
         }
-        print(tnsname)
         response = requests.post(TNS_API_URL, data=data, headers={'User-Agent': 'tns_marker{"tns_id":104739,"type": "bot", "name":"Name and Redshift Retriever"}'})
         response.raise_for_status()  # Raise an exception
         json_data = response.json()
@@ -80,13 +78,11 @@ def fetch_ztf(ztf_name):
     Returns:
     - pd.DataFrame: DataFrame containing the processed ZTF data.
     """
-    print('Fetching ZTF data through LASAIR')
 
     try:
         # Fetch data from LASAIR
         object_list = [ztf_name]
         response = L.objects(object_list)
-        print(response)
         
         # Create a dictionary of lightcurves
         lcs_dict = {}
@@ -117,7 +113,6 @@ def fetch_ztf_cone(ra, dec, radius):
     """
     Fetch ZTF data within by cone search
     """
-    print('Fetching ZTF data through LASAIR')
 
     try:
         # Fetch data from LASAIR with cone searchs
@@ -151,7 +146,6 @@ def fetch_gaia(gaia_name):
     """
     try:
 
-        print(f'Fetching GAIA data for {gaia_name}')
         # Encode GAIA name for URL
         website = f'http://gsaweb.ast.cam.ac.uk/alerts/alert/{gaia_name}/lightcurve.csv/'
         # Read data from URL
@@ -176,7 +170,6 @@ def fetch_gaia(gaia_name):
     
 def fetch_neowise(ra, dec):    
     skycoord = SkyCoord(ra,dec,unit="deg")
-    print('Fetching NEOWISE')
     url =  "https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query?catalog=neowiser_p1bs_psd&spatial=cone&radius=5&radunits=arcsec&objstr=" + skycoord.ra.to_string(u.hour, alwayssign=True) + '+' + skycoord.dec.to_string(u.degree, alwayssign=True) + "&outfmt=1&selcols=ra,dec,mjd,w1mpro,w1sigmpro,w2mpro,w2sigmpro"
     r = requests.get(url)
     table = Table.read(url, format='ascii')
@@ -197,7 +190,6 @@ def fetch_neowise(ra, dec):
     return neowise
 
 def identify_surveys(TNS_information):
-    print('identifying surveys')
     reporting_list = TNS_information['internal_names']
     reporting_list= reporting_list[0].split(',')
     survey_dict = {}
@@ -220,7 +212,6 @@ def identify_surveys(TNS_information):
 
 def marvin(tnsname):
     TNS_info = tns_lookup(tnsname)
-    print(TNS_info)
     surveys = identify_surveys(TNS_info)
 
     The_Book = []

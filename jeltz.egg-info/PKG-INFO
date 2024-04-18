@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: jeltz
-Version: 0.2.dev1+gfb6bebb.d20240417
+Version: 0.0.3.dev4+g784dc1b
 Requires-Dist: pandas
 Requires-Dist: astropy
 Requires-Dist: requests
