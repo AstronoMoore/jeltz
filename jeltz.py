@@ -27,6 +27,22 @@ def get_TNS_api_key():
     except FileNotFoundError:
         print("Error: settings.ini file not found")
         return None
+    
+
+def get_atlas_login_keys():
+    try:
+        config = configparser.ConfigParser()
+        config.read('settings.ini')
+        if 'ATLAS' in config:
+            username = config['ATLAS']['ATLAS_USERNAME']
+            password = config['ATLAS']['ATLAS_PASS']
+            return username, passwords
+        else:
+            print("Error: ATLAS not found in settings.ini")
+            return None
+    except FileNotFoundError:
+        print("Error: settings.ini file not found")
+        return None
 
 
 def get_LASAIR_TOKEN():
@@ -64,6 +80,18 @@ def tns_lookup(tnsname):
     except Exception as e:
         print(f"fetching TNS info caused an error: {e}")
         return None
+
+def fetch_atlas():
+    atlasurl = 'https://fallingstar-data.com/forcedphot'
+    response = requests.post(url=f"{atlasurl}/api-token-auth/",data={'username':username,'password':password})
+    if response.status_code == 200:
+        token = response.json()['token']
+        print(f'Token: {token}')
+        headers = {'Authorization':f'Token {token}','Accept':'application/json'}
+    else:
+        raise RuntimeError(f'ERROR in connect_atlas(): {response.status_code}')
+        print(resp.json())
+    return headers
 
 def fetch_ztf(ztf_name):
     L = lasair(get_LASAIR_TOKEN(), endpoint = "https://lasair-ztf.lsst.ac.uk/api")
